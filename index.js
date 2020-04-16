@@ -9,6 +9,7 @@ async function run() {
     const labelName = core.getInput("label-name");
     const milestoneName = core.getInput("milestone-name");
     const ignoreList = core.getInput("columns-to-ignore");
+    const addNote = core.getInput("add-as-note");
     const octokit = new github.GitHub(myToken);
     const context = github.context;
 
@@ -58,12 +59,27 @@ async function run() {
         } else {
             // card is not present
             // create new card in the appropriate column
-            return await createNewCard(octokit, columnId, context.payload.issue.id);
+            if (addNote == "true") {
+                console.log("Note creation requested instead of card creation");
+                return await createNewNote(octokit, columnId, context.payload.issue.html_url);
+            }
+            else {
+                return await createNewCard(octokit, columnId, context.payload.issue.id);
+            }
         }
     } else {
         // None of the labels match what we are looking for, non-indicative of a failure though
         return `Issue #${context.payload.issue.id} does not have a label that matches ${labelName}, ignoring`;
     }
+}
+
+async function createNewNote(octokit, columnId, issueURL){
+    console.log(`Note requested, creating a note for Issue #${issueURL}`);
+    await octokit.projects.createCard({
+        column_id: columnId,
+        note: `${issueURL}`
+    });
+    return `Successfully created a new card in column #${columnId} for an issue with the corresponding id:${issueURL} !`;
 }
 
 async function createNewCard(octokit, columnId, issueId){
