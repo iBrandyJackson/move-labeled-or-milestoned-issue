@@ -48,7 +48,12 @@ async function run() {
             skip = ignoreList.split(",");
         }
         
-        if (cardId != null && (ignoreList == "*" || skip.includes(currentColumn))){
+        if (addNote == "true") {
+            // If the user has requested a note to be created instead of a card, do that instead.
+            console.log("Note creation requested instead of card creation, so creating a note. Skipping existing card checks.");
+            return await createNewNote(octokit, columnId, context.payload.issue.html_url);
+        }
+        else if (cardId != null && (ignoreList == "*" || skip.includes(currentColumn))){
             // card is present in a column that we want to ignore, don't move or do anything
             return `Card exists for issue in column ${currentColumn}. Column specified to be ignored, not moving issue.`;
         }
@@ -74,12 +79,12 @@ async function run() {
 }
 
 async function createNewNote(octokit, columnId, issueURL){
-    console.log(`Note requested, creating a note for Issue #${issueURL}`);
+    console.log(`Creating a note for issue ${issueURL}`);
     await octokit.projects.createCard({
         column_id: columnId,
         note: `${issueURL}`
     });
-    return `Successfully created a new card in column #${columnId} for an issue with the corresponding id:${issueURL} !`;
+    return `Successfully created a new note in column #${columnId} for an issue with the corresponding issue ${issueURL} !`;
 }
 
 async function createNewCard(octokit, columnId, issueId){
