@@ -64,13 +64,7 @@ async function run() {
         } else {
             // card is not present
             // create new card in the appropriate column
-            if (addNote == "true") {
-                console.log("Note creation requested instead of card creation");
-                return await createNewNote(octokit, columnId, context.payload.issue.html_url);
-            }
-            else {
-                return await createNewCard(octokit, columnId, context.payload.issue.id);
-            }
+            return await createNewCard(octokit, columnId, context.payload.issue.id);
         }
     } else {
         // None of the labels match what we are looking for, non-indicative of a failure though
